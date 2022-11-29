@@ -339,6 +339,14 @@ AES128 = function(choice, key, text)
     return null
 end function
 
+decrypt = function(string)
+    return AES128("decrypt", Encryption_key, string)
+end function
+
+encrypt = function(string)
+    return AES128("encrypt", Encryption_key, string)
+end function
+
 get_servers = function()
     file_path = "/home/"+active_user()+"/Config/ssh/servers"
     if active_user() == "root" then file_path = "/root/Config/ssh/servers"
@@ -348,22 +356,14 @@ get_servers = function()
     if not computer.File(file_path) then computer.touch(ssh_folder, "servers")
     servers = {}
     for server in computer.File(file_path).get_content.split(char(10))
-        if server.split(":").len != 2 then continue
-        servers[server.split(":")[0]] = server.split(":")[1]
+        if server.split(":").len != 3 then continue
+        servers[server.split(":")[0]+":"+server.split(":")[1]] = server.split(":")[2]
     end for
     return servers
 end function
 
-decrypt = function(string)
-    return AES128("decrypt", Encryption_key, string)
-end function
-
-encrypt = function(string)
-    return AES128("encrypt", Encryption_key, string)
-end function
-
-add_server = function(ip, key, servers)
-    servers[encrypt(ip)] = encrypt(key)
+add_server = function(ip, key, port, servers)
+    servers[encrypt(ip)+":"+encrypt(port)] = encrypt(key)
     content = ""
     for server in servers
         content = content+server["key"]+":"+server["value"]+char(10)
@@ -374,8 +374,8 @@ add_server = function(ip, key, servers)
     exit()
 end function
 
-remove_server = function(ip, servers)
-    servers.remove(encrypt(ip))
+remove_server = function(ip, port, servers)
+    servers.remove(encrypt(ip)+":"+encrypt(port))
     content = ""
     for server in servers
         content = content+server["key"]+":"+server["value"]+char(10)
@@ -387,22 +387,24 @@ remove_server = function(ip, servers)
 end function
 
 main = function()
-    usage = "<b>Usage: ssh [user@password] [ip address] [(opt) port]</b>\nExample: ssh John@Connor 127.0.0.1\nExample: ssh John@Connor 127.0.0.1 22\nExample: ssh add 127.0.0.1 1234567890123456\nExample: ssh remove 127.0.0.1"
+    usage = "<b>Usage: ssh [user@password] [ip address] [(opt) port]</b>\nExample: ssh John@Connor 127.0.0.1\nExample: ssh John@Connor 127.0.0.1 22\nExample: ssh add 127.0.0.1 1234567890123456 22\nExample: ssh remove 127.0.0.1 22"
     servers = get_servers
-    if params.len < 2 or params.len > 3 then exit(usage)
+    if params.len < 2 or params.len > 4 then exit(usage)
     if params[0].split("@").len != 2 and params[0] != "add" and params[0] != "remove" then exit(usage)
-    if params[0] == "add" then add_server(params[1], params[2], servers)
-    if params[0] == "remove" then remove_server(params[1], servers)
+    if params[0] == "add" then add_server(params[1], params[2], params[3], servers)
+    if params[0] == "remove" then remove_server(params[1], params[2], servers)
     credentials = params[0].split("@")
     user = credentials[0]
     password = credentials[1]
     ip = params[1]
     port = 22
+    encrypted_ip = encrypt(ip)
     if params.len == 3 then port = params[2].to_int
+    encrypted_port = encrypt(str(port))
     if typeof(port) != "number" then exit("Invalid port: " + port)
     print("Connecting...")
 
-    if servers.hasIndex(encrypt(ip)) then password = decrypt(servers[encrypt(ip)])+":"+password
+    if servers.hasIndex(encrypted_ip+":"+encrypted_port) then password = decrypt(servers[encrypted_ip+":"+encrypted_port])+":"+password
     shell = get_shell.connect_service(ip, port, user, password, "ssh")
     if typeof(shell) == "string" then exit(shell)
     if shell then 
@@ -412,9 +414,7 @@ main = function()
     end if
 end function
 
-
 Encryption_key = "1234567890123456" //Encryption key here max 16 characters
-
 
 computer = get_shell.host_computer
 main()
