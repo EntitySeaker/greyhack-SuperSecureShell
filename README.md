@@ -3,9 +3,9 @@ This program will allow users to have AES encryption for their servers.
 This military grade encryption is used in real life and can not be cracked even by the most experienced players.
 
 ## How to use
-1. Put Encode.src on your server inside the /server directory.<br>
+1. Put encode.src on your server inside the /server directory.<br>
 
-2. Edit Decode.src and put your Encryption_key on line 340, compile Decode.src to decode.bin on your server inside the /server directory.<br>
+2. Edit decode.src and put your Encryption_key on line 340, compile decode.src to decode.bin on your server inside the /server directory.<br>
 
 3. In the directory /server/conf on your server you will find a file called sshd.conf, open this file and set "encryption_enabled" to true.<br>
 
