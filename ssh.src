@@ -340,12 +340,12 @@ AES128 = function(choice, key, text)
 end function
 
 get_servers = function()
-    file_path = "/home/"+active_user()+"/Config/ssh/servers.json"
-    if active_user() == "root" then file_path = "/root/Config/ssh/servers.json"
-    ssh_folder = file_path.split("/servers.json")[0]
-    config_dir = file_path.split("/ssh/servers.json")[0]
+    file_path = "/home/"+active_user()+"/Config/ssh/servers"
+    if active_user() == "root" then file_path = "/root/Config/ssh/servers"
+    ssh_folder = file_path.split("/servers")[0]
+    config_dir = file_path.split("/ssh/servers")[0]
     if not computer.File(ssh_folder) then computer.create_folder(config_dir, "ssh")
-    if not computer.File(file_path) then computer.touch(ssh_folder, "servers.json")
+    if not computer.File(file_path) then computer.touch(ssh_folder, "servers")
     servers = {}
     for server in computer.File(file_path).get_content.split(char(10))
         if server.split(":").len != 2 then continue
@@ -368,8 +368,8 @@ add_server = function(ip, key, servers)
     for server in servers
         content = content+server["key"]+":"+server["value"]+char(10)
     end for
-    file_path = "/home/"+active_user()+"/Config/ssh/servers.json"
-    if active_user() == "root" then file_path = "/root/Config/ssh/servers.json"
+    file_path = "/home/"+active_user()+"/Config/ssh/servers"
+    if active_user() == "root" then file_path = "/root/Config/ssh/servers"
     computer.File(file_path).set_content(content)
     exit()
 end function
@@ -380,8 +380,8 @@ remove_server = function(ip, servers)
     for server in servers
         content = content+server["key"]+":"+server["value"]+char(10)
     end for
-    file_path = "/home/"+active_user()+"/Config/ssh/servers.json"
-    if active_user() == "root" then file_path = "/root/Config/ssh/servers.json"
+    file_path = "/home/"+active_user()+"/Config/ssh/servers"
+    if active_user() == "root" then file_path = "/root/Config/ssh/servers"
     computer.File(file_path).set_content(content)
     exit()
 end function
