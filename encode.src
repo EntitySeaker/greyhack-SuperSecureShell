@@ -338,6 +338,7 @@ AES128 = function(choice, key, text)
 end function
 
 Encode = function(password)
+    if password.split(":").len != 2 then exit("You didn't say the magic word.")
 	r = AES128("encrypt", password.split(":")[0], password.split(":")[1])
 	return str(r)
 end function
